@@ -2,14 +2,15 @@ package com.socialnetwork.socialnetwork.repository;
 
 import com.socialnetwork.socialnetwork.model.UserPost;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface UserPostRepository extends MongoRepository<UserPost, Long> {
-    Optional<UserPost> findUserPostById(Long id);
+public interface UserPostRepository extends MongoRepository<UserPost, String> {
+    Optional<UserPost> findUserPostById(String id);
 
-    Optional<List<UserPost>> findUserPostByUsername(String username);
+    UserPost findUserPostByUsername(String username);
 
-    void deleteUserPostById(Long id);
+    void deleteUserPostByUsername(String username);
 }

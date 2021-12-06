@@ -2,60 +2,48 @@ package com.socialnetwork.socialnetwork.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document
 public class UserPost {
     @Id
-    private Long id;
+    @GeneratedValue
+    private String id;
     private String username;
-    private String imageUrl;
-    private String message;
-    private LocalDateTime localDateTime;
+    private List<Post> postList;
 
     public UserPost() { }
 
-    public UserPost(Long id, String username, String imageUrl, String message, LocalDateTime localDateTime) {
-        this.id = id;
+    public UserPost(String username) {
         this.username = username;
-        this.imageUrl = imageUrl;
-        this.message = message;
-        this.localDateTime = localDateTime;
+        this.postList = new ArrayList<>();
     }
 
-    public Long getId() {
-        return this.id;
+    public String getId() {
+        return id;
     }
-    public void setId(Long id) {
+
+    public void setId(String id) {
         this.id = id;
     }
 
     public String getUsername() {
-        return this.username;
+        return username;
     }
+
     public void setUsername(String username) {
         this.username = username;
     }
 
-    public String getImageUrl() {
-        return this.imageUrl;
-    }
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public List<Post> getPostList() {
+        return postList;
     }
 
-    public String getMessage(){
-        return this.message;
-    }
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public LocalDateTime getLocalDateTime() {
-        return this.localDateTime;
-    }
-    public void setLocalDateTime(LocalDateTime localDateTime) {
-        this.localDateTime = localDateTime;
+    public void setPostList(List<Post> postList) {
+        this.postList = postList;
     }
 }
