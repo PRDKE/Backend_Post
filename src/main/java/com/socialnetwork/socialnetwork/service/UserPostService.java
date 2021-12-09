@@ -61,7 +61,7 @@ public class UserPostService {
                 postList.add(post);
             } else if (newUserPost != null) {
                 postList.addAll(newUserPost.getPostList());
-                post.setId(postList.size());
+                post.setId(postList.size()-1);
                 postList.add(post);
             }
 
@@ -90,8 +90,14 @@ public class UserPostService {
         for (Post post : userPost.getPostList()) {
             if (post.getId() == id) {
                 userPost.getPostList().remove(post);
+                break;
             }
         }
+        Query query = new Query();
+        query.addCriteria(Criteria.where("username").is(username));
+        Update update = new Update();
+        update.set("postList", userPost.getPostList());
+        mongoTemplate.findAndModify(query, update, UserPost.class);
     }
 
     public UserPost updatePost(String username, Post post) {

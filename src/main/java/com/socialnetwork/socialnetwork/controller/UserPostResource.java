@@ -72,12 +72,42 @@ public class UserPostResource {
         return new ResponseEntity<>(newUserPost, HttpStatus.CREATED);
     }
 
+    @DeleteMapping("/deletePost")
+    public ResponseEntity<?> deletePostById(@RequestBody DeletePost deletePost) {
+        this.userPostService.deletePostById(deletePost.getUsername(), deletePost.getPostID());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @DeleteMapping("/deleteAllPosts")
     public ResponseEntity<?> deleteAllUserPosts(@RequestBody String username) {
         this.userPostService.deleteAllPosts(username);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
+
+class DeletePost {
+    private String username;
+    private int postID;
+
+    public DeletePost() {}
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public int getPostID() {
+        return postID;
+    }
+
+    public void setPostID(int postID) {
+        this.postID = postID;
+    }
+}
+
 
 class NewPost {
     private String username;
