@@ -1,13 +1,15 @@
 package com.socialnetwork.socialnetwork.controller;
 
-import com.socialnetwork.socialnetwork.model.Post;
-import com.socialnetwork.socialnetwork.model.UserPost;
+import com.socialnetwork.socialnetwork.model.*;
 import com.socialnetwork.socialnetwork.service.UserPostService;
+import com.socialnetwork.socialnetwork.utils.JwtUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/userpost")
@@ -18,42 +20,6 @@ public class UserPostResource {
         this.userPostService = userPostService;
     }
 
-//    @GetMapping("/all")
-//    public ResponseEntity<List<UserPost>> getAllUserPost() {
-//        List<UserPost> userPosts = userPostService.findAllUserPosts();
-//        return new ResponseEntity<>(userPosts, HttpStatus.OK);
-//    }
-//
-//    @GetMapping("/find/{id}")
-//    public ResponseEntity<UserPost> getUserPostById(@PathVariable("id") Long id) {
-//        UserPost userPost = userPostService.findUserPostById(id);
-//        return new ResponseEntity<>(userPost, HttpStatus.OK);
-//    }
-//
-//    @GetMapping("/find/{username}")
-//    public ResponseEntity<List<UserPost>> getUserPostByUsername(@PathVariable("username") String username) {
-//        List<UserPost> userPosts = userPostService.findUserPostByUsername(username);
-//        return new ResponseEntity<>(userPosts, HttpStatus.OK);
-//    }
-//
-//    @PostMapping("/add")
-//    public ResponseEntity<UserPost> addUserPost(@RequestBody UserPost userPost) {
-//        UserPost newUserPost = userPostService.addUserPost(userPost);
-//        return new ResponseEntity<>(newUserPost, HttpStatus.CREATED);
-//    }
-//
-//    @PutMapping("/update")
-//    public ResponseEntity<UserPost> updateUserPost(@RequestBody UserPost userPost) {
-//        UserPost newUserPost = userPostService.updateUserPost(userPost);
-//        return new ResponseEntity<>(newUserPost, HttpStatus.CREATED);
-//    }
-//
-//    @DeleteMapping("/delete/{id}")
-//    public ResponseEntity<?> deleteUserPost(@PathVariable("id") Long id) {
-//        userPostService.deleteUserPostById(id);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
-
     @GetMapping
     public ResponseEntity<List<UserPost>> getAllUserPosts() {
         List<UserPost> userPostList = this.userPostService.findAllUserPosts();
@@ -61,73 +27,79 @@ public class UserPostResource {
     }
 
     @GetMapping("/user/{username}")
-    public ResponseEntity<List<Post>> getUserPostByUsername(@PathVariable String username) {
+    public ResponseEntity<List<Post>> findPostsByUsername(HttpServletRequest request, @PathVariable String username) {
+        String jwtToken = request.getHeader("Authorization");
+        if(jwtToken == null || (!JwtUtils.isJwtTokenValid(jwtToken))) {
+            System.err.println("No authorization-header set or invalid jwtToken provided.");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        List<Post> postList = this.userPostService.findUserPostByUsername(username);
+        return new ResponseEntity<>(postList, HttpStatus.OK);
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<Post>> getUserPostByUsername(HttpServletRequest request) {
+        String jwtToken = request.getHeader("Authorization");
+        if(jwtToken == null || (!JwtUtils.isJwtTokenValid(jwtToken))) {
+            System.err.println("No authorization-header set or invalid jwtToken provided.");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String username = JwtUtils.getUsernameFromJwtToken(jwtToken);
         List<Post> postList = this.userPostService.findUserPostByUsername(username);
         return new ResponseEntity<>(postList, HttpStatus.OK);
     }
 
     @PostMapping("/newPost")
-    public ResponseEntity<UserPost> newPost(@RequestBody NewPost newPost) throws Exception {
-        UserPost newUserPost = this.userPostService.addPost(newPost.getUsername(), newPost.getPost());
+    public ResponseEntity<UserPost> newPost(HttpServletRequest request, @RequestBody Post post) throws Exception {
+        String jwtToken = request.getHeader("Authorization");
+        if(jwtToken == null || (!JwtUtils.isJwtTokenValid(jwtToken))) {
+            System.err.println("No authorization-header set or invalid jwtToken provided.");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String username = JwtUtils.getUsernameFromJwtToken(jwtToken);
+        UserPost newUserPost = this.userPostService.addPost(username, post);
         return new ResponseEntity<>(newUserPost, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/deletePost")
-    public ResponseEntity<?> deletePostById(@RequestBody DeletePost deletePost) {
-        this.userPostService.deletePostById(deletePost.getUsername(), deletePost.getPostID());
+    @DeleteMapping("/deletePost/{postID}")
+    public ResponseEntity<?> deletePostById(HttpServletRequest request, @PathVariable int postID) {
+        String jwtToken = request.getHeader("Authorization");
+        if(jwtToken == null || (!JwtUtils.isJwtTokenValid(jwtToken))) {
+            System.err.println("No authorization-header set or invalid jwtToken provided.");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String username = JwtUtils.getUsernameFromJwtToken(jwtToken);
+        this.userPostService.deletePostById(username, postID);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/deleteAllPosts")
-    public ResponseEntity<?> deleteAllUserPosts(@RequestBody String username) {
+    public ResponseEntity<?> deleteAllUserPosts(HttpServletRequest request) {
+        String jwtToken = request.getHeader("Authorization");
+        if(jwtToken == null || (!JwtUtils.isJwtTokenValid(jwtToken))) {
+            System.err.println("No authorization-header set or invalid jwtToken provided.");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String username = JwtUtils.getUsernameFromJwtToken(jwtToken);
         this.userPostService.deleteAllPosts(username);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-}
 
-class DeletePost {
-    private String username;
-    private int postID;
-
-    public DeletePost() {}
-
-    public String getUsername() {
-        return username;
+    @GetMapping("/find/firstPost/{username}")
+    public ResponseEntity<Post> findFirstPostOfUser(@PathVariable String username) {
+        Post lastPost = this.userPostService.findFirstPostByUsername(username);
+        return new ResponseEntity<>(lastPost, HttpStatus.OK);
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public int getPostID() {
-        return postID;
-    }
-
-    public void setPostID(int postID) {
-        this.postID = postID;
-    }
-}
-
-
-class NewPost {
-    private String username;
-    private Post post;
-
-    public NewPost() {}
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public Post getPost() {
-        return post;
-    }
-
-    public void setPost(Post post) {
-        this.post = post;
+    @PutMapping("/updateUsername")
+    public ResponseEntity upadeUsername(HttpServletRequest request, @RequestBody String newUsername) {
+        String jwtToken = request.getHeader("Authorization");
+        if(jwtToken == null || (!JwtUtils.isJwtTokenValid(jwtToken))) {
+            System.err.println("No authorization-header set or invalid jwtToken provided.");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        String username = JwtUtils.getUsernameFromJwtToken(jwtToken);
+        this.userPostService.updateUsername(username, newUsername);
+        return new ResponseEntity(HttpStatus.OK);
     }
 }

@@ -12,10 +12,8 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.OptionalInt;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserPostService {
@@ -57,11 +55,17 @@ public class UserPostService {
             List<Post> postList = new ArrayList<>();
             if (newUserPost == null) {
                 addUserPost(username);
-                post.setId(1);
+                post.setId(0);
                 postList.add(post);
             } else if (newUserPost != null) {
                 postList.addAll(newUserPost.getPostList());
-                post.setId(postList.size()-1);
+                int highestID;
+                if (postList.isEmpty()) {
+                    highestID = 0;
+                } else {
+                    highestID = postList.stream().map(x -> x.getId()).max(Integer::compare).get();
+                }
+                post.setId(highestID + 1);
                 postList.add(post);
             }
 
@@ -79,7 +83,12 @@ public class UserPostService {
         if (userPost == null) {
             throw new PostNotFoundException("There is no user with this username!");
         }
-        return userPost.getPostList();
+        return userPost.getPostList().stream().sorted(Comparator.comparing(Post::getLocalDateTime).reversed()).collect(Collectors.toList());
+    }
+
+    public Post findFirstPostByUsername(String username) {
+        List<Post> newList = this.findUserPostByUsername(username);
+        return newList.get(0);
     }
 
     public void deletePostById(String username, int id) {
@@ -111,6 +120,18 @@ public class UserPostService {
             }
         }
         return userPost;
+    }
+
+    public void updateUsername(String currentUsername, String newUsername) {
+        UserPost userPost = this.userPostRepository.findUserPostByUsername(currentUsername);
+        if (userPost == null) {
+            throw new PostNotFoundException("This user does not have any posts!");
+        }
+        Query query = new Query();
+        query.addCriteria(Criteria.where("username").is(currentUsername));
+        Update update = new Update();
+        update.set("username", newUsername);
+        mongoTemplate.findAndModify(query, update, UserPost.class);
     }
 
     public void deleteAllPosts(String username) {
