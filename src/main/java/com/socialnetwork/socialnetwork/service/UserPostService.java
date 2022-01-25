@@ -42,13 +42,13 @@ public class UserPostService {
             throw new Exception("Bad request detected!");
         } else {
             if (post.getImageUrl().equals("Grinning Face")) {
-                post.setImageUrl("http://s3.amazonaws.com/pix.iemoji.com/images/emoji/apple/ios-12/256/grinning-face-with-smiling-eyes.png");
+                post.setImageUrl("https://cdn-icons-png.flaticon.com/512/725/725107.png");
             }
             if (post.getImageUrl().equals("Sad Face")) {
-                post.setImageUrl("https://cdn.pixabay.com/photo/2020/08/04/04/14/juneteenth-5461576_960_720.png");
+                post.setImageUrl("https://cdn-icons-png.flaticon.com/512/725/725099.png");
             }
             if (post.getImageUrl().equals("Bored Face")) {
-                post.setImageUrl("https://cdn.pixabay.com/photo/2020/12/27/20/24/emoji-5865207_960_720.png");
+                post.setImageUrl("https://cdn-icons-png.flaticon.com/512/725/725085.png");
             }
 
             UserPost newUserPost = this.userPostRepository.findUserPostByUsername(username);
