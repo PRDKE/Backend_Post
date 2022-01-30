@@ -26,6 +26,7 @@ public class UserPostResource {
         return new ResponseEntity<>(userPostList, HttpStatus.OK);
     }
 
+    // retrieve the all posts of a user with the matching username
     @GetMapping("/user/{username}")
     public ResponseEntity<List<Post>> findPostsByUsername(HttpServletRequest request, @PathVariable String username) {
         String jwtToken = request.getHeader("Authorization");
@@ -37,6 +38,8 @@ public class UserPostResource {
         return new ResponseEntity<>(postList, HttpStatus.OK);
     }
 
+    // only for the logged-in user who is using the application
+    // retrieve the all posts of a user with the matching username
     @GetMapping("/user")
     public ResponseEntity<List<Post>> getUserPostByUsername(HttpServletRequest request) {
         String jwtToken = request.getHeader("Authorization");
@@ -49,6 +52,7 @@ public class UserPostResource {
         return new ResponseEntity<>(postList, HttpStatus.OK);
     }
 
+    // create a new Post
     @PostMapping("/newPost")
     public ResponseEntity<UserPost> newPost(HttpServletRequest request, @RequestBody Post post) throws Exception {
         String jwtToken = request.getHeader("Authorization");
@@ -61,6 +65,7 @@ public class UserPostResource {
         return new ResponseEntity<>(newUserPost, HttpStatus.CREATED);
     }
 
+    // delete a post by id
     @DeleteMapping("/deletePost/{postID}")
     public ResponseEntity<?> deletePostById(HttpServletRequest request, @PathVariable int postID) {
         String jwtToken = request.getHeader("Authorization");
@@ -73,6 +78,8 @@ public class UserPostResource {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    // delete all posts of a user
+    // this method is not connected to the frontend
     @DeleteMapping("/deleteAllPosts")
     public ResponseEntity<?> deleteAllUserPosts(HttpServletRequest request) {
         String jwtToken = request.getHeader("Authorization");
@@ -85,12 +92,14 @@ public class UserPostResource {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    // retrieves the 'first' (after ordering the posts descending by date and time -> the newest of a user) post of a user
     @GetMapping("/find/firstPost/{username}")
     public ResponseEntity<Post> findFirstPostOfUser(@PathVariable String username) {
         Post lastPost = this.userPostService.findFirstPostByUsername(username);
         return new ResponseEntity<>(lastPost, HttpStatus.OK);
     }
 
+    // updates a username of a matching mongoDB document in the database
     @PutMapping("/updateUsername")
     public ResponseEntity upadeUsername(HttpServletRequest request, @RequestBody String newUsername) {
         String jwtToken = request.getHeader("Authorization");
